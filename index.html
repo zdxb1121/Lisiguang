@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>北京大学李四光中队讲师团课单</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -11,12 +11,15 @@
             --pku-red-light: #fdf2f2;
         }
 
+        /* 基础重置 */
+        * { box-sizing: border-box; } 
+
         body {
             font-family: "Source Han Serif SC", "Noto Serif CJK SC", "SimSun", serif;
             background-color: #f4f4f4;
             color: #2c3e50;
             margin: 0;
-            padding: 15px;
+            padding: 10px;
             line-height: 1.6;
         }
 
@@ -24,28 +27,29 @@
             max-width: 1300px;
             margin: 0 auto;
             background-color: #fff;
-            padding: clamp(15px, 5%, 40px);
+            padding: clamp(15px, 4%, 40px);
             box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            border-top: 10px solid var(--pku-red);
+            border-top: 8px solid var(--pku-red);
             border-radius: 4px;
         }
 
         h1 {
             text-align: center;
             color: var(--pku-red);
-            font-size: clamp(1.4rem, 5vw, 2.5rem);
-            margin-bottom: 25px;
+            font-size: clamp(1.3rem, 5vw, 2.2rem);
+            margin-bottom: 20px;
             letter-spacing: 2px;
+            font-weight: 700;
         }
 
         #loadingStatus {
             text-align: center;
-            padding: 10px;
+            padding: 12px;
             background: #e3f2fd;
             color: #0d47a1;
-            border-radius: 5px;
+            border-radius: 8px;
             margin-bottom: 20px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         /* 搜索与排序控制区 */
@@ -54,23 +58,24 @@
             flex-direction: column;
             align-items: center;
             gap: 12px;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
+            width: 100%;
         }
 
         #searchInput {
             width: 100%;
             max-width: 600px;
-            padding: 12px 25px;
+            padding: 12px 20px;
             font-size: 1rem;
             border: 2px solid #ddd;
             border-radius: 30px;
             outline: none;
-            transition: 0.3s;
+            transition: border-color 0.3s;
+            -webkit-appearance: none; /* 清除 iOS 默认内阴影 */
         }
 
         #searchInput:focus { border-color: var(--pku-red); }
 
-        /* 移动端专属排序下拉框 - 默认隐藏 */
         .mobile-sorter-wrapper {
             display: none;
             width: 100%;
@@ -80,62 +85,60 @@
         #mobileSorter {
             width: 100%;
             padding: 10px;
-            border-radius: 10px;
+            border-radius: 12px;
             border: 1px solid #ccc;
             font-size: 0.9rem;
-            background-color: white;
+            background-color: #fcfcfc;
+            color: #444;
         }
 
-        /* 表格基础样式 */
+        /* 表格样式 */
         .table-wrapper { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
         
         th { 
             background-color: var(--pku-red); 
             color: #ffffff; 
-            padding: 18px 10px; 
+            padding: 15px 10px; 
             text-align: center;
             white-space: nowrap;
         }
 
         th.sortable { cursor: pointer; position: relative; }
-        th.sortable:hover { background-color: #a50000; }
-        th.sortable::after { content: ' ↕'; opacity: 0.5; font-size: 0.8em; margin-left: 5px; }
+        th.sortable::after { content: ' ↕'; opacity: 0.6; font-size: 0.8em; margin-left: 4px; }
 
-        td { padding: 16px; border-bottom: 1px solid #eee; vertical-align: middle; }
-        tr:nth-child(even) { background-color: #fdfdfd; }
-        tr:hover { background-color: #f9f2f2; }
+        td { padding: 14px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        tr:nth-child(even) { background-color: #fafafa; }
+        tr:hover { background-color: #fef9f9; }
 
-        /* 列宽分配 */
         .col-title { width: 20%; font-weight: bold; color: var(--pku-red); }
         .col-speaker { width: 10%; text-align: center; }
-        .col-desc { width: 46%; text-align: justify; font-size: 0.9rem; }
+        .col-desc { width: 46%; text-align: justify; font-size: 0.9rem; color: #444; }
         .col-target { width: 12%; text-align: center; }
         .col-stat { width: 12%; text-align: center; }
 
-        /* 状态标签 */
-        .tag { padding: 4px 12px; border-radius: 15px; font-size: 0.8rem; font-weight: 500; display: inline-block; white-space: nowrap; }
+        .tag { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; display: inline-block; white-space: nowrap; }
         .active { background-color: #e8f5e9; color: #2e7d32; }
         .review { background-color: #fff3e0; color: #ef6c00; }
         .away { background-color: #f5f5f5; color: #757575; }
         mark { background-color: #ffeb3b; color: #000; padding: 0 2px; border-radius: 2px; }
 
-        /* 移动端适配适配断点 */
-        @media screen and (max-width: 900px) {
-            .mobile-sorter-wrapper { display: block; } /* 显示手机排序 */
+        /* 移动端响应式布局 */
+        @media screen and (max-width: 850px) {
+            .mobile-sorter-wrapper { display: block; }
             
             table, thead, tbody, th, td, tr { display: block; }
-            thead tr { position: absolute; top: -9999px; left: -9999px; } /* 隐藏PC表头 */
+            thead tr { position: absolute; top: -9999px; left: -9999px; }
             
-            tr { border: 2px solid #eee; margin-bottom: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-            td { border: none; border-bottom: 1px solid #eee; position: relative; padding-left: 35% !important; text-align: left !important; width: auto !important; }
-            td:before { content: attr(data-label); position: absolute; left: 15px; font-weight: bold; color: var(--pku-red); }
+            tr { border: 1px solid #eee; margin-bottom: 15px; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+            td { border: none; border-bottom: 1px solid #f9f9f9; position: relative; padding: 12px 12px 12px 32% !important; text-align: left !important; width: auto !important; font-size: 0.9rem; }
+            td:before { content: attr(data-label); position: absolute; left: 12px; font-weight: bold; color: var(--pku-red); font-size: 0.85rem; }
             td:last-child { border-bottom: none; }
             
-            .col-title { font-size: 1.1rem; }
+            .col-title { font-size: 1rem; background: var(--pku-red-light); }
         }
 
-        #noResult { display: none; text-align: center; padding: 40px; color: #888; }
+        #noResult { display: none; text-align: center; padding: 40px; color: #999; }
     </style>
 </head>
 <body>
@@ -143,14 +146,14 @@
 <div class="container">
     <h1>李四光中队讲师团课单</h1>
 
-    <div id="loadingStatus">正在从 GitHub 获取最新课单数据...</div>
+    <div id="loadingStatus">正在同步 GitHub 课单数据...</div>
 
     <div class="controls">
         <input type="text" id="searchInput" oninput="filterTable()" placeholder="搜索课程、讲师或关键词...">
         
         <div class="mobile-sorter-wrapper">
             <select id="mobileSorter" onchange="handleMobileSort(this.value)">
-                <option value="">🕒 默认排序 (按添加时间)</option>
+                <option value="">🕒 默认排序</option>
                 <option value="speaker">👤 按讲师名排序</option>
                 <option value="target">🎯 按建议受众排序</option>
                 <option value="status">🚩 按课程状态排序</option>
@@ -172,7 +175,7 @@
             <tbody id="tableBody"></tbody>
         </table>
     </div>
-    <div id="noResult">未找到匹配的课程。</div>
+    <div id="noResult">抱歉，没有找到相关课程。</div>
 </div>
 
 <script>
@@ -185,13 +188,12 @@
 
     let currentSort = { key: null, asc: true };
 
-    // 自动加载 Excel
     async function initData() {
         const loading = document.getElementById('loadingStatus');
         try {
-            // 这里使用相对路径，GitHub Pages 会自动处理
-            const response = await fetch('讲师团课单.xlsx');
-            if (!response.ok) throw new Error("无法读取 Excel 文件");
+            // 加上时间戳防止 GitHub Pages 缓存 Excel 文件
+            const response = await fetch('讲师团课单.xlsx?t=' + new Date().getTime());
+            if (!response.ok) throw new Error();
             
             const arrayBuffer = await response.arrayBuffer();
             const workbook = XLSX.read(arrayBuffer, { type: 'array' });
@@ -199,19 +201,18 @@
             const rawData = XLSX.utils.sheet_to_json(sheet);
 
             courses = rawData.map(row => ({
-                title: row['课程名'] || row['Title'] || "",
-                speaker: row['讲师'] || row['Speaker'] || "",
-                desc: row['简介'] || row['Description'] || "",
-                target: row['建议受众'] || row['Target'] || "",
-                status: parseStatus(row['状态'] || row['Status'])
+                title: row['课程名'] || "",
+                speaker: row['讲师'] || "",
+                desc: row['简介'] || "",
+                target: row['建议受众'] || "",
+                status: parseStatus(row['状态'])
             }));
 
             loading.style.display = 'none';
             renderTable();
         } catch (error) {
-            loading.innerHTML = "❌ 数据加载失败。请确保仓库中存在 '讲师团课单.xlsx' 且表头正确。";
-            loading.style.background = "#ffebee";
-            loading.style.color = "#c62828";
+            loading.innerHTML = "❌ 无法读取课单文件，请检查文件名是否为 '讲师团课单.xlsx'";
+            loading.style.background = "#fff0f0";
         }
     }
 
@@ -227,7 +228,7 @@
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = "";
         const filter = keyword.trim().toLowerCase();
-        let count = 0;
+        let found = 0;
 
         courses.forEach(item => {
             const isMatch = !filter || 
@@ -237,19 +238,19 @@
                 item.target.toLowerCase().includes(filter);
 
             if (isMatch) {
-                count++;
+                found++;
                 const row = document.createElement('tr');
-                const high = (t) => {
+                const highlight = (t) => {
                     if (!filter || !t) return t;
-                    const reg = new RegExp(`(${filter})`, "gi");
+                    const reg = new RegExp(`(${filter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "gi");
                     return String(t).replace(reg, '<mark>$1</mark>');
                 };
 
                 row.innerHTML = `
-                    <td class="col-title" data-label="课程名">${high(item.title)}</td>
-                    <td class="col-speaker" data-label="讲师">${high(item.speaker)}</td>
-                    <td class="col-desc" data-label="简介">${high(item.desc)}</td>
-                    <td class="col-target" data-label="建议受众">${high(item.target)}</td>
+                    <td class="col-title" data-label="课程名">${highlight(item.title)}</td>
+                    <td class="col-speaker" data-label="讲师">${highlight(item.speaker)}</td>
+                    <td class="col-desc" data-label="简介">${highlight(item.desc)}</td>
+                    <td class="col-target" data-label="建议受众">${highlight(item.target)}</td>
                     <td class="col-stat" data-label="状态">
                         <span class="tag ${statusMap[item.status].class}">${statusMap[item.status].text}</span>
                     </td>
@@ -257,19 +258,15 @@
                 tbody.appendChild(row);
             }
         });
-        document.getElementById("noResult").style.display = (count === 0) ? "block" : "none";
+        document.getElementById("noResult").style.display = (found === 0) ? "block" : "none";
     }
 
-    // 响应移动端下拉排序
     function handleMobileSort(val) {
         if (!val) return;
-        // 模拟一个空的 th 对象来复用原有的排序逻辑
         sortTable(val, { classList: { add:()=>{}, remove:()=>{}, contains:()=>false } });
     }
 
-    // 通用排序逻辑
     function sortTable(key, thElement) {
-        // 切换升降序
         if (currentSort.key === key) {
             currentSort.asc = !currentSort.asc;
         } else {
@@ -277,33 +274,22 @@
             currentSort.asc = true;
         }
 
-        // 更新 PC 端表头样式
-        document.querySelectorAll('th.sortable').forEach(el => {
-            el.classList.remove('sort-asc', 'sort-desc');
-        });
-        if (thElement.classList) {
-            thElement.classList.add(currentSort.asc ? 'sort-asc' : 'sort-desc');
-        }
+        document.querySelectorAll('th.sortable').forEach(el => el.className = 'sortable');
+        if (thElement.classList) thElement.classList.add(currentSort.asc ? 'sort-asc' : 'sort-desc');
 
-        // 排序数组
         courses.sort((a, b) => {
             let vA = (key === 'status') ? statusMap[a[key]].order : a[key];
             let vB = (key === 'status') ? statusMap[b[key]].order : b[key];
-            
             if (vA < vB) return currentSort.asc ? -1 : 1;
             if (vA > vB) return currentSort.asc ? 1 : -1;
             return 0;
         });
 
-        // 重新渲染，并保持搜索词
         renderTable(document.getElementById("searchInput").value);
     }
 
-    function filterTable() {
-        renderTable(document.getElementById("searchInput").value);
-    }
+    function filterTable() { renderTable(document.getElementById("searchInput").value); }
 
-    // 执行初始化
     initData();
 </script>
 
