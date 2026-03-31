@@ -38,40 +38,64 @@
             text-align: center;
             color: var(--pku-red);
             font-size: clamp(1.4rem, 5vw, 2.4rem);
-            margin-bottom: 10px;
+            margin-bottom: 20px;
             letter-spacing: 2px;
             font-weight: 700;
         }
 
-        /* 简介区块样式 */
-        .intro-section {
+        /* 可折叠简介区块样式 */
+        .intro-details {
             max-width: 850px;
             margin: 0 auto 30px auto;
-            padding: 20px;
             background-color: var(--pku-red-light);
-            border-left: 5px solid var(--pku-red);
-            border-radius: 4px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(140, 0, 0, 0.1);
         }
 
-        .intro-title {
+        .intro-summary {
+            padding: 15px 20px;
             color: var(--pku-red);
             font-weight: bold;
-            font-size: 1.15rem;
-            margin-bottom: 10px;
-            display: block;
+            font-size: 1.1rem;
+            cursor: pointer;
+            list-style: none; /* 隐藏默认箭头 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s;
         }
 
+        .intro-summary:hover {
+            background-color: rgba(140, 0, 0, 0.05);
+        }
+
+        /* 自定义点击时的状态指示 */
+        .intro-summary::after {
+            content: '▼';
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        .intro-details[open] .intro-summary::after {
+            transform: rotate(180deg);
+        }
+
+        /* 隐藏默认的小三角（针对不同浏览器） */
+        .intro-summary::-webkit-details-marker { display: none; }
+
         .intro-content {
+            padding: 0 20px 20px 20px;
             font-size: 0.95rem;
             color: #444;
             text-align: justify;
-            margin: 0;
+            white-space: pre-wrap; /* 保留 Word 中的换行 */
         }
 
-        /* 加载动画 */
+        /* 其他控件样式 */
         #loadingStatus {
             text-align: center;
-            padding: 12px;
+            padding: 10px;
             background: #e3f2fd;
             color: #0d47a1;
             border-radius: 8px;
@@ -96,33 +120,19 @@
             border: 2px solid #ddd;
             border-radius: 30px;
             outline: none;
-            transition: all 0.3s;
         }
 
-        #searchInput:focus { border-color: var(--pku-red); box-shadow: 0 0 10px rgba(140,0,0,0.1); }
+        #searchInput:focus { border-color: var(--pku-red); }
 
-        .mobile-sorter-wrapper {
-            display: none;
-            width: 100%;
-            max-width: 600px;
-        }
+        .mobile-sorter-wrapper { display: none; width: 100%; max-width: 600px; }
+        #mobileSorter { width: 100%; padding: 10px; border-radius: 12px; border: 1px solid #ccc; background-color: #fff; }
 
-        #mobileSorter {
-            width: 100%;
-            padding: 10px;
-            border-radius: 12px;
-            border: 1px solid #ccc;
-            background-color: #fff;
-        }
-
-        /* 表格样式 */
+        /* 表格样式保持不变 */
         .table-wrapper { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
-        
         th { background-color: var(--pku-red); color: #ffffff; padding: 15px 10px; }
         th.sortable { cursor: pointer; position: relative; }
         th.sortable::after { content: ' ↕'; opacity: 0.6; margin-left: 4px; }
-
         td { padding: 14px; border-bottom: 1px solid #eee; vertical-align: middle; }
         tr:nth-child(even) { background-color: #fafafa; }
         tr:hover { background-color: #fef9f9; }
@@ -144,7 +154,7 @@
             table, thead, tbody, th, td, tr { display: block; }
             thead tr { position: absolute; top: -9999px; left: -9999px; }
             tr { border: 1px solid #eee; margin-bottom: 15px; border-radius: 12px; overflow: hidden; }
-            td { border: none; border-bottom: 1px solid #f9f9f9; position: relative; padding: 12px 12px 12px 32% !important; text-align: left !important; width: auto !important; }
+            td { border: none; border-bottom: 1px solid #f9f9f9; position: relative; padding: 12px 12px 12px 35% !important; text-align: left !important; width: auto !important; }
             td:before { content: attr(data-label); position: absolute; left: 12px; font-weight: bold; color: var(--pku-red); font-size: 0.85rem; }
             .col-title { background: var(--pku-red-light); }
         }
@@ -157,16 +167,15 @@
 <div class="container">
     <h1>李四光中队讲师团课单</h1>
 
-    <div class="intro-section" id="introBox">
-        <span class="intro-title">什么是李四光讲师团？</span>
-        <div class="intro-content" id="wordContent">正在读取讲师团简介...</div>
-    </div>
+    <details class="intro-details">
+        <summary class="intro-summary">什么是李四光讲师团？</summary>
+        <div class="intro-content" id="wordContent">正在从文档读取简介...</div>
+    </details>
 
-    <div id="loadingStatus">正在同步数据中...</div>
+    <div id="loadingStatus">正在从后端同步数据...</div>
 
     <div class="controls">
         <input type="text" id="searchInput" oninput="filterTable()" placeholder="搜索课程、讲师或关键词...">
-        
         <div class="mobile-sorter-wrapper">
             <select id="mobileSorter" onchange="handleMobileSort(this.value)">
                 <option value="">🕒 默认排序</option>
@@ -191,7 +200,7 @@
             <tbody id="tableBody"></tbody>
         </table>
     </div>
-    <div id="noResult">抱歉，没有找到相关课程。</div>
+    <div id="noResult">没有找到匹配结果。</div>
 </div>
 
 <script>
@@ -203,30 +212,26 @@
     };
     let currentSort = { key: null, asc: true };
 
-    // 核心初始化：读取 Excel 和 Word
     async function init() {
         const loading = document.getElementById('loadingStatus');
         const timestamp = new Date().getTime();
 
-        // 1. 处理 Word 简介
+        // 读取 Word 简介
         try {
             const wordRes = await fetch('讲师团简介.docx?t=' + timestamp);
             if (wordRes.ok) {
                 const arrayBuffer = await wordRes.arrayBuffer();
-                // 仅提取纯文本
+                // 提取纯文本并保留格式
                 const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
-                document.getElementById('wordContent').innerText = result.value;
-            } else {
-                document.getElementById('wordContent').innerText = "暂无简介内容。";
+                document.getElementById('wordContent').innerText = result.value || "暂无简介内容。";
             }
         } catch (e) {
-            document.getElementById('wordContent').innerText = "简介文件读取失败，请检查 '讲师团简介.docx' 是否存在。";
+            document.getElementById('wordContent').innerText = "简介读取出错，请检查文件。";
         }
 
-        // 2. 处理 Excel 课单
+        // 读取 Excel 课单
         try {
             const excelRes = await fetch('讲师团课单.xlsx?t=' + timestamp);
-            if (!excelRes.ok) throw new Error();
             const data = await excelRes.arrayBuffer();
             const workbook = XLSX.read(data, { type: 'array' });
             const rawData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
@@ -241,11 +246,11 @@
             loading.style.display = 'none';
             renderTable();
         } catch (error) {
-            loading.innerHTML = "❌ 课单读取失败，请确保目录下有名为 '讲师团课单.xlsx' 的文件。";
+            loading.innerHTML = "❌ 数据加载失败，请刷新页面重试。";
         }
     }
 
-    // --- 以下逻辑保持不变 ---
+    // 逻辑部分保持不变
     function parseStatus(t) {
         if (!t) return "active";
         if (t.includes("已出课")) return "active";
