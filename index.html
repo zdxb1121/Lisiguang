@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>北京大学李四光中队讲师团课单</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
+    
     <style>
         :root {
             --pku-red: #8C0000;
             --pku-red-light: #fdf2f2;
-            --pku-gold: #c2a661;
         }
 
-        /* 基础重置 */
         * { box-sizing: border-box; } 
 
         body {
@@ -43,31 +43,32 @@
             font-weight: 700;
         }
 
-        /* 讲师团简介区块 */
+        /* 简介区块样式 */
         .intro-section {
-            max-width: 800px;
+            max-width: 850px;
             margin: 0 auto 30px auto;
             padding: 20px;
             background-color: var(--pku-red-light);
-            border-left: 4px solid var(--pku-red);
+            border-left: 5px solid var(--pku-red);
             border-radius: 4px;
         }
 
         .intro-title {
             color: var(--pku-red);
             font-weight: bold;
-            font-size: 1.1rem;
-            margin-bottom: 8px;
+            font-size: 1.15rem;
+            margin-bottom: 10px;
             display: block;
         }
 
-        .intro-text {
+        .intro-content {
             font-size: 0.95rem;
-            color: #555;
+            color: #444;
             text-align: justify;
             margin: 0;
         }
 
+        /* 加载动画 */
         #loadingStatus {
             text-align: center;
             padding: 12px;
@@ -96,10 +97,9 @@
             border-radius: 30px;
             outline: none;
             transition: all 0.3s;
-            -webkit-appearance: none;
         }
 
-        #searchInput:focus { border-color: var(--pku-red); box-shadow: 0 0 8px rgba(140,0,0,0.1); }
+        #searchInput:focus { border-color: var(--pku-red); box-shadow: 0 0 10px rgba(140,0,0,0.1); }
 
         .mobile-sorter-wrapper {
             display: none;
@@ -112,7 +112,6 @@
             padding: 10px;
             border-radius: 12px;
             border: 1px solid #ccc;
-            font-size: 0.9rem;
             background-color: #fff;
         }
 
@@ -120,15 +119,9 @@
         .table-wrapper { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
         
-        th { 
-            background-color: var(--pku-red); 
-            color: #ffffff; 
-            padding: 15px 10px; 
-            text-align: center;
-        }
-
+        th { background-color: var(--pku-red); color: #ffffff; padding: 15px 10px; }
         th.sortable { cursor: pointer; position: relative; }
-        th.sortable::after { content: ' ↕'; opacity: 0.6; font-size: 0.8em; margin-left: 4px; }
+        th.sortable::after { content: ' ↕'; opacity: 0.6; margin-left: 4px; }
 
         td { padding: 14px; border-bottom: 1px solid #eee; vertical-align: middle; }
         tr:nth-child(even) { background-color: #fafafa; }
@@ -136,7 +129,7 @@
 
         .col-title { width: 20%; font-weight: bold; color: var(--pku-red); }
         .col-speaker { width: 10%; text-align: center; }
-        .col-desc { width: 46%; text-align: justify; font-size: 0.9rem; color: #444; }
+        .col-desc { width: 46%; text-align: justify; font-size: 0.9rem; }
         .col-target { width: 12%; text-align: center; }
         .col-stat { width: 12%; text-align: center; }
 
@@ -144,20 +137,15 @@
         .active { background-color: #e8f5e9; color: #2e7d32; }
         .review { background-color: #fff3e0; color: #ef6c00; }
         .away { background-color: #f5f5f5; color: #757575; }
-        mark { background-color: #ffeb3b; color: #000; padding: 0 2px; border-radius: 2px; }
+        mark { background-color: #ffeb3b; color: #000; padding: 0 2px; }
 
-        /* 移动端适配 */
         @media screen and (max-width: 850px) {
-            .intro-section { padding: 15px; margin-bottom: 20px; }
             .mobile-sorter-wrapper { display: block; }
-            
             table, thead, tbody, th, td, tr { display: block; }
             thead tr { position: absolute; top: -9999px; left: -9999px; }
-            
             tr { border: 1px solid #eee; margin-bottom: 15px; border-radius: 12px; overflow: hidden; }
             td { border: none; border-bottom: 1px solid #f9f9f9; position: relative; padding: 12px 12px 12px 32% !important; text-align: left !important; width: auto !important; }
             td:before { content: attr(data-label); position: absolute; left: 12px; font-weight: bold; color: var(--pku-red); font-size: 0.85rem; }
-            
             .col-title { background: var(--pku-red-light); }
         }
 
@@ -169,14 +157,12 @@
 <div class="container">
     <h1>李四光中队讲师团课单</h1>
 
-    <div class="intro-section">
+    <div class="intro-section" id="introBox">
         <span class="intro-title">什么是李四光讲师团？</span>
-        <p class="intro-text">
-            北京大学李四光中队讲师团是由北京大学地球与空间科学学院学生组成的志愿科普团队。我们秉承李四光先生精神，致力于深入中小学校园，通过生动有趣的科普讲座，传播地球科学知识，点燃青少年对宇宙与自然的探索热情。
-        </p>
+        <div class="intro-content" id="wordContent">正在读取讲师团简介...</div>
     </div>
 
-    <div id="loadingStatus">正在同步最新课单数据...</div>
+    <div id="loadingStatus">正在同步数据中...</div>
 
     <div class="controls">
         <input type="text" id="searchInput" oninput="filterTable()" placeholder="搜索课程、讲师或关键词...">
@@ -215,19 +201,35 @@
         review: { text: "在审", class: "review", order: 2 },
         away: { text: "讲师离团", class: "away", order: 3 }
     };
-
     let currentSort = { key: null, asc: true };
 
-    async function initData() {
+    // 核心初始化：读取 Excel 和 Word
+    async function init() {
         const loading = document.getElementById('loadingStatus');
+        const timestamp = new Date().getTime();
+
+        // 1. 处理 Word 简介
         try {
-            const response = await fetch('讲师团课单.xlsx?t=' + new Date().getTime());
-            if (!response.ok) throw new Error();
-            
-            const arrayBuffer = await response.arrayBuffer();
-            const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const rawData = XLSX.utils.sheet_to_json(sheet);
+            const wordRes = await fetch('讲师团简介.docx?t=' + timestamp);
+            if (wordRes.ok) {
+                const arrayBuffer = await wordRes.arrayBuffer();
+                // 仅提取纯文本
+                const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+                document.getElementById('wordContent').innerText = result.value;
+            } else {
+                document.getElementById('wordContent').innerText = "暂无简介内容。";
+            }
+        } catch (e) {
+            document.getElementById('wordContent').innerText = "简介文件读取失败，请检查 '讲师团简介.docx' 是否存在。";
+        }
+
+        // 2. 处理 Excel 课单
+        try {
+            const excelRes = await fetch('讲师团课单.xlsx?t=' + timestamp);
+            if (!excelRes.ok) throw new Error();
+            const data = await excelRes.arrayBuffer();
+            const workbook = XLSX.read(data, { type: 'array' });
+            const rawData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 
             courses = rawData.map(row => ({
                 title: row['课程名'] || "",
@@ -236,19 +238,19 @@
                 target: row['建议受众'] || "",
                 status: parseStatus(row['状态'])
             }));
-
             loading.style.display = 'none';
             renderTable();
         } catch (error) {
-            loading.innerHTML = "❌ 数据加载失败，请确保目录下有名为 '讲师团课单.xlsx' 的文件。";
+            loading.innerHTML = "❌ 课单读取失败，请确保目录下有名为 '讲师团课单.xlsx' 的文件。";
         }
     }
 
-    function parseStatus(text) {
-        if (!text) return "active";
-        if (text.includes("已出课")) return "active";
-        if (text.includes("在审")) return "review";
-        if (text.includes("离团")) return "away";
+    // --- 以下逻辑保持不变 ---
+    function parseStatus(t) {
+        if (!t) return "active";
+        if (t.includes("已出课")) return "active";
+        if (t.includes("在审")) return "review";
+        if (t.includes("离团")) return "away";
         return "active";
     }
 
@@ -257,14 +259,8 @@
         tbody.innerHTML = "";
         const filter = keyword.trim().toLowerCase();
         let found = 0;
-
         courses.forEach(item => {
-            const isMatch = !filter || 
-                item.title.toLowerCase().includes(filter) || 
-                item.speaker.toLowerCase().includes(filter) || 
-                item.desc.toLowerCase().includes(filter) ||
-                item.target.toLowerCase().includes(filter);
-
+            const isMatch = !filter || item.title.toLowerCase().includes(filter) || item.speaker.toLowerCase().includes(filter) || item.desc.toLowerCase().includes(filter) || item.target.toLowerCase().includes(filter);
             if (isMatch) {
                 found++;
                 const row = document.createElement('tr');
@@ -273,50 +269,27 @@
                     const reg = new RegExp(`(${filter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "gi");
                     return String(t).replace(reg, '<mark>$1</mark>');
                 };
-
-                row.innerHTML = `
-                    <td class="col-title" data-label="课程名">${highlight(item.title)}</td>
-                    <td class="col-speaker" data-label="讲师">${highlight(item.speaker)}</td>
-                    <td class="col-desc" data-label="简介">${highlight(item.desc)}</td>
-                    <td class="col-target" data-label="建议受众">${highlight(item.target)}</td>
-                    <td class="col-stat" data-label="状态">
-                        <span class="tag ${statusMap[item.status].class}">${statusMap[item.status].text}</span>
-                    </td>
-                `;
+                row.innerHTML = `<td class="col-title" data-label="课程名">${highlight(item.title)}</td><td class="col-speaker" data-label="讲师">${highlight(item.speaker)}</td><td class="col-desc" data-label="简介">${highlight(item.desc)}</td><td class="col-target" data-label="建议受众">${highlight(item.target)}</td><td class="col-stat" data-label="状态"><span class="tag ${statusMap[item.status].class}">${statusMap[item.status].text}</span></td>`;
                 tbody.appendChild(row);
             }
         });
         document.getElementById("noResult").style.display = (found === 0) ? "block" : "none";
     }
 
-    function handleMobileSort(val) {
-        if (!val) return;
-        sortTable(val, { classList: { add:()=>{}, remove:()=>{}, contains:()=>false } });
-    }
-
-    function sortTable(key, thElement) {
-        if (currentSort.key === key) {
-            currentSort.asc = !currentSort.asc;
-        } else {
-            currentSort.key = key;
-            currentSort.asc = true;
-        }
-        document.querySelectorAll('th.sortable').forEach(el => el.className = 'sortable');
-        if (thElement.classList) thElement.classList.add(currentSort.asc ? 'sort-asc' : 'sort-desc');
-        courses.sort((a, b) => {
-            let vA = (key === 'status') ? statusMap[a[key]].order : a[key];
-            let vB = (key === 'status') ? statusMap[b[key]].order : b[key];
-            if (vA < vB) return currentSort.asc ? -1 : 1;
-            if (vA > vB) return currentSort.asc ? 1 : -1;
-            return 0;
+    function handleMobileSort(v) { if(v) sortTable(v, {classList:{add:()=>{},remove:()=>{},contains:()=>false}}); }
+    function sortTable(k, el) {
+        if(currentSort.key===k){currentSort.asc=!currentSort.asc;}else{currentSort.key=k;currentSort.asc=true;}
+        document.querySelectorAll('th.sortable').forEach(e=>e.className='sortable');
+        if(el.classList)el.classList.add(currentSort.asc?'sort-asc':'sort-desc');
+        courses.sort((a,b)=>{
+            let vA=(k==='status')?statusMap[a[k]].order:a[k], vB=(k==='status')?statusMap[b[k]].order:b[k];
+            return currentSort.asc?(vA>vB?1:-1):(vA<vB?1:-1);
         });
         renderTable(document.getElementById("searchInput").value);
     }
+    function filterTable(){renderTable(document.getElementById("searchInput").value);}
 
-    function filterTable() { renderTable(document.getElementById("searchInput").value); }
-
-    initData();
+    init();
 </script>
-
 </body>
 </html>
