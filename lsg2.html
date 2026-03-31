@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北京大学李四光中队讲师团课单</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --pku-red: #8C0000;
+            --pku-red-light: #fdf2f2;
+        }
+
+        body {
+            font-family: "Source Han Serif SC", "Noto Serif CJK SC", "SimSun", serif;
+            background-color: #f4f4f4;
+            color: #2c3e50;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: clamp(20px, 5%, 50px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border-top: 10px solid var(--pku-red);
+            border-radius: 4px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--pku-red);
+            font-size: clamp(1.5rem, 5vw, 2.8rem);
+            margin-bottom: 30px;
+            letter-spacing: 4px;
+            font-weight: 700;
+        }
+
+        #loadingStatus {
+            text-align: center;
+            padding: 10px;
+            background: #e3f2fd;
+            color: #0d47a1;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        #searchInput {
+            flex: 1;
+            min-width: 280px;
+            max-width: 600px;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 30px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        #searchInput:focus { border-color: var(--pku-red); }
+
+        /* 表格样式 */
+        .table-wrapper { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        
+        th { 
+            background-color: var(--pku-red); 
+            color: #ffffff; 
+            padding: 18px 10px; 
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        th.sortable { cursor: pointer; position: relative; }
+        th.sortable:hover { background-color: #a50000; }
+        th.sortable::after { content: ' ↕'; opacity: 0.5; font-size: 0.8em; margin-left: 5px; }
+
+        td { padding: 16px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        tr:nth-child(even) { background-color: #fdfdfd; }
+        tr:hover { background-color: #f9f2f2; }
+
+        .col-title { width: 18%; font-weight: bold; color: var(--pku-red); }
+        .col-speaker { width: 10%; text-align: center; }
+        .col-desc { width: 48%; text-align: justify; font-size: 0.95rem; }
+        .col-target { width: 12%; text-align: center; }
+        .col-stat { width: 12%; text-align: center; }
+
+        /* 标签与高亮 */
+        .tag { padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; display: inline-block; }
+        .active { background-color: #e8f5e9; color: #2e7d32; }
+        .review { background-color: #fff3e0; color: #ef6c00; }
+        .away { background-color: #f5f5f5; color: #757575; }
+        mark { background-color: #ffeb3b; color: #000; padding: 0 2px; border-radius: 2px; }
+
+        /* 移动端卡片布局 */
+        @media screen and (max-width: 900px) {
+            table, thead, tbody, th, td, tr { display: block; }
+            thead tr { position: absolute; top: -9999px; left: -9999px; }
+            tr { border: 2px solid #eee; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+            td { border: none; border-bottom: 1px solid #eee; position: relative; padding-left: 35% !important; text-align: left !important; width: auto !important; }
+            td:before { content: attr(data-label); position: absolute; left: 15px; font-weight: bold; color: var(--pku-red); }
+            td:last-child { border-bottom: none; }
+        }
+
+        #noResult { display: none; text-align: center; padding: 40px; color: #888; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>北京大学李四光中队讲师团</h1>
+
+    <div id="loadingStatus">准备就绪。正在尝试读取 Excel 课单...</div>
+
+    <div class="controls">
+        <input type="text" id="searchInput" oninput="filterTable()" placeholder="搜索课程、讲师、受众或关键词...">
+    </div>
+    
+    <div class="table-wrapper">
+        <table id="courseTable">
+            <thead>
+                <tr>
+                    <th>课程名</th>
+                    <th class="sortable" onclick="sortTable('speaker', this)">讲师</th>
+                    <th>课程简介</th>
+                    <th class="sortable" onclick="sortTable('target', this)">建议受众</th>
+                    <th class="sortable" onclick="sortTable('status', this)">状态</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+    <div id="noResult">未找到匹配的课程。</div>
+</div>
+
+<script>
+    let courses = [];
+    const statusMap = {
+        active: { text: "已出课", class: "active", order: 1 },
+        review: { text: "在审", class: "review", order: 2 },
+        away: { text: "讲师离团", class: "away", order: 3 }
+    };
+
+    let currentSort = { key: null, asc: true };
+
+    // 自动读取 Excel 的函数
+    async function loadExcel() {
+        const loading = document.getElementById('loadingStatus');
+        try {
+            // 尝试读取同目录下的文件
+            const response = await fetch('讲师团课单.xlsx');
+            if (!response.ok) throw new Error("未检测到 Excel 文件");
+            
+            const arrayBuffer = await response.arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+            // 数据映射
+            courses = jsonData.map(row => ({
+                title: row['课程名'] || "未命名课程",
+                speaker: row['讲师'] || "未知讲师",
+                desc: row['简介'] || "暂无简介内容",
+                target: row['建议受众'] || "全适龄",
+                status: formatStatus(row['状态'])
+            }));
+
+            loading.style.display = 'none';
+            renderTable();
+        } catch (error) {
+            console.warn(error.message);
+            loading.innerHTML = "提示：请确保目录下有名为 <b>讲师团课单.xlsx</b> 的文件。<br><small>(注意：直接双击 HTML 运行可能无法读取文件，建议使用 Live Server 预览)</small>";
+            loading.style.background = "#fff3e0";
+            loading.style.color = "#e65100";
+        }
+    }
+
+    function formatStatus(text) {
+        if (!text) return "active";
+        if (text.includes("已出课")) return "active";
+        if (text.includes("在审")) return "review";
+        if (text.includes("离团")) return "away";
+        return "active";
+    }
+
+    function renderTable(keyword = "") {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = "";
+        const filter = keyword.trim().toLowerCase();
+        let visibleCount = 0;
+
+        courses.forEach(item => {
+            const isMatch = !filter || 
+                item.title.toLowerCase().includes(filter) || 
+                item.speaker.toLowerCase().includes(filter) || 
+                item.desc.toLowerCase().includes(filter) ||
+                item.target.toLowerCase().includes(filter);
+
+            if (isMatch) {
+                visibleCount++;
+                const row = document.createElement('tr');
+                const highlight = (text) => {
+                    if (!filter || !text) return text;
+                    const regex = new RegExp(`(${filter})`, "gi");
+                    return String(text).replace(regex, '<mark>$1</mark>');
+                };
+
+                row.innerHTML = `
+                    <td class="col-title" data-label="课程名">${highlight(item.title)}</td>
+                    <td class="col-speaker" data-label="讲师">${highlight(item.speaker)}</td>
+                    <td class="col-desc" data-label="简介">${highlight(item.desc)}</td>
+                    <td class="col-target" data-label="建议受众">${highlight(item.target)}</td>
+                    <td class="col-stat" data-label="状态">
+                        <span class="tag ${statusMap[item.status].class}">${statusMap[item.status].text}</span>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            }
+        });
+        document.getElementById("noResult").style.display = (visibleCount === 0) ? "block" : "none";
+    }
+
+    function sortTable(key, th) {
+        currentSort.asc = (currentSort.key === key) ? !currentSort.asc : true;
+        currentSort.key = key;
+        
+        document.querySelectorAll('th').forEach(el => el.className = el.classList.contains('sortable') ? 'sortable' : '');
+        th.classList.add(currentSort.asc ? 'sort-asc' : 'sort-desc');
+
+        courses.sort((a, b) => {
+            let vA = (key === 'status') ? statusMap[a[key]].order : a[key];
+            let vB = (key === 'status') ? statusMap[b[key]].order : b[key];
+            return currentSort.asc ? (vA > vB ? 1 : -1) : (vA < vB ? 1 : -1);
+        });
+        renderTable(document.getElementById("searchInput").value);
+    }
+
+    function filterTable() { renderTable(document.getElementById("searchInput").value); }
+
+    // 启动
+    loadExcel();
+</script>
+
+</body>
+</html>
