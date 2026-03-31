@@ -37,13 +37,13 @@
         h1 {
             text-align: center;
             color: var(--pku-red);
-            font-size: clamp(1.3rem, 5vw, 2.4rem);
+            font-size: clamp(1.4rem, 5vw, 2.4rem);
             margin-bottom: 20px;
             letter-spacing: 2px;
             font-weight: 700;
         }
 
-        /* 可折叠简介区块 */
+        /* 折叠简介区块 */
         .intro-details {
             max-width: 850px;
             margin: 0 auto 30px auto;
@@ -63,38 +63,27 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background 0.3s;
         }
 
-        .intro-summary:hover { background-color: rgba(140, 0, 0, 0.05); }
-
-        /* 自定义折叠箭头 */
-        .intro-summary::after {
-            content: '▼';
-            font-size: 0.8rem;
-            transition: transform 0.3s;
-        }
-
+        .intro-summary::after { content: '▼'; font-size: 0.8rem; transition: 0.3s; }
         .intro-details[open] .intro-summary::after { transform: rotate(180deg); }
         .intro-summary::-webkit-details-marker { display: none; }
 
+        /* Word内容展示区 */
         .intro-content {
             padding: 0 20px 20px 20px;
             font-size: 0.95rem;
             color: #444;
-            overflow: hidden;
         }
-
-        /* Word 图片样式优化 */
+        
+        /* 关键：限制Word图片宽度 */
         .intro-content img {
             max-width: 100% !important;
             height: auto !important;
             display: block;
             margin: 15px auto;
             border-radius: 4px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            /* 尝试修复 EXIF 导致的图片旋转问题 */
-            image-orientation: from-image; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         #loadingStatus {
@@ -107,7 +96,6 @@
             font-size: 0.85rem;
         }
 
-        /* 控制区域 */
         .controls {
             display: flex;
             flex-direction: column;
@@ -125,26 +113,19 @@
             border: 2px solid #ddd;
             border-radius: 30px;
             outline: none;
-            transition: border-color 0.3s;
+            transition: 0.3s;
         }
-
         #searchInput:focus { border-color: var(--pku-red); }
 
         .mobile-sorter-wrapper { display: none; width: 100%; max-width: 600px; }
-        #mobileSorter {
-            width: 100%;
-            padding: 10px;
-            border-radius: 12px;
-            border: 1px solid #ccc;
-            background: #fff;
-            color: #555;
-        }
+        #mobileSorter { width: 100%; padding: 10px; border-radius: 12px; border: 1px solid #ccc; background: #fff; }
 
         /* 表格样式 */
         .table-wrapper { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        @media screen and (max-width: 850px) { table { min-width: 100%; } }
 
-        th { background-color: var(--pku-red); color: #ffffff; padding: 15px 10px; text-align: center; }
+        th { background-color: var(--pku-red); color: #ffffff; padding: 15px 10px; }
         th.sortable { cursor: pointer; position: relative; }
         th.sortable::after { content: ' ↕'; opacity: 0.6; margin-left: 4px; }
 
@@ -152,33 +133,27 @@
         tr:nth-child(even) { background-color: #fafafa; }
         tr:hover { background-color: #fef9f9; }
 
-        /* 列宽占比 */
         .col-title { width: 20%; font-weight: bold; color: var(--pku-red); }
         .col-speaker { width: 10%; text-align: center; }
         .col-desc { width: 46%; text-align: justify; font-size: 0.9rem; }
         .col-target { width: 12%; text-align: center; }
         .col-stat { width: 12%; text-align: center; }
 
-        /* 标签 */
         .tag { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; display: inline-block; }
         .active { background-color: #e8f5e9; color: #2e7d32; }
         .review { background-color: #fff3e0; color: #ef6c00; }
         .away { background-color: #f5f5f5; color: #757575; }
-        mark { background-color: #ffeb3b; color: #000; padding: 0 2px; border-radius: 2px; }
+        mark { background-color: #ffeb3b; color: #000; padding: 0 2px; }
 
-        /* 移动端响应式布局 */
         @media screen and (max-width: 850px) {
             .mobile-sorter-wrapper { display: block; }
-            table { min-width: 100%; }
             table, thead, tbody, th, td, tr { display: block; }
             thead tr { position: absolute; top: -9999px; left: -9999px; }
-            
-            tr { border: 1px solid #eee; margin-bottom: 15px; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+            tr { border: 1px solid #eee; margin-bottom: 15px; border-radius: 12px; overflow: hidden; }
             td { border: none; border-bottom: 1px solid #f9f9f9; position: relative; padding: 12px 12px 12px 35% !important; text-align: left !important; width: auto !important; }
             td:before { content: attr(data-label); position: absolute; left: 12px; font-weight: bold; color: var(--pku-red); font-size: 0.85rem; }
-            
-            .col-title { background: var(--pku-red-light); padding-left: 15px !important; }
-            .col-title:before { display: none; } /* 标题行不需要前缀 */
+            .col-title { background: var(--pku-red-light); padding-left: 12px !important; }
+            .col-title:before { display: none; }
         }
 
         #noResult { display: none; text-align: center; padding: 40px; color: #999; }
@@ -191,13 +166,13 @@
 
     <details class="intro-details">
         <summary class="intro-summary">什么是李四光讲师团？</summary>
-        <div class="intro-content" id="wordContent">正在同步简介内容...</div>
+        <div class="intro-content" id="wordContent">正在加载简介内容（含图片）...</div>
     </details>
 
-    <div id="loadingStatus">正在连接 GitHub 数据库...</div>
+    <div id="loadingStatus">正在同步云端课单数据...</div>
 
     <div class="controls">
-        <input type="text" id="searchInput" oninput="filterTable()" placeholder="输入关键词搜索课程、讲师...">
+        <input type="text" id="searchInput" oninput="filterTable()" placeholder="搜索课程、讲师或关键词...">
         <div class="mobile-sorter-wrapper">
             <select id="mobileSorter" onchange="handleMobileSort(this.value)">
                 <option value="">🕒 默认排序</option>
@@ -222,7 +197,7 @@
             <tbody id="tableBody"></tbody>
         </table>
     </div>
-    <div id="noResult">没有找到符合条件的课程。</div>
+    <div id="noResult">未找到匹配的课程。</div>
 </div>
 
 <script>
@@ -236,9 +211,9 @@
 
     async function init() {
         const loading = document.getElementById('loadingStatus');
-        const timestamp = new Date().getTime(); // 防止缓存导致不更新
+        const timestamp = new Date().getTime();
 
-        // 1. 加载并转换 Word 简介
+        // 1. 处理 Word 简介（含图片转换）
         try {
             const wordRes = await fetch('讲师团简介.docx?t=' + timestamp);
             if (wordRes.ok) {
@@ -251,13 +226,13 @@
                     })
                 };
                 const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer }, options);
-                document.getElementById('wordContent').innerHTML = result.value || "暂无内容。";
+                document.getElementById('wordContent').innerHTML = result.value || "暂无简介内容。";
             }
         } catch (e) {
-            document.getElementById('wordContent').innerText = "简介加载失败，请检查 '讲师团简介.docx' 是否在根目录。";
+            document.getElementById('wordContent').innerText = "简介文件读取失败，请检查仓库中是否存在 '讲师团简介.docx'。";
         }
 
-        // 2. 加载并解析 Excel 课单
+        // 2. 处理 Excel 课单
         try {
             const excelRes = await fetch('讲师团课单.xlsx?t=' + timestamp);
             const data = await excelRes.arrayBuffer();
@@ -274,7 +249,7 @@
             loading.style.display = 'none';
             renderTable();
         } catch (error) {
-            loading.innerHTML = "❌ 课单读取失败，请检查文件名称。";
+            loading.innerHTML = "❌ 课单加载失败，请检查文件名并刷新。";
         }
     }
 
@@ -290,17 +265,11 @@
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = "";
         const filter = keyword.trim().toLowerCase();
-        let count = 0;
-
+        let found = 0;
         courses.forEach(item => {
-            const isMatch = !filter || 
-                item.title.toLowerCase().includes(filter) || 
-                item.speaker.toLowerCase().includes(filter) || 
-                item.desc.toLowerCase().includes(filter) ||
-                item.target.toLowerCase().includes(filter);
-
+            const isMatch = !filter || item.title.toLowerCase().includes(filter) || item.speaker.toLowerCase().includes(filter) || item.desc.toLowerCase().includes(filter) || item.target.toLowerCase().includes(filter);
             if (isMatch) {
-                count++;
+                found++;
                 const row = document.createElement('tr');
                 const highlight = (t) => {
                     if (!filter || !t) return t;
@@ -317,7 +286,7 @@
                 tbody.appendChild(row);
             }
         });
-        document.getElementById("noResult").style.display = (count === 0) ? "block" : "none";
+        document.getElementById("noResult").style.display = (found === 0) ? "block" : "none";
     }
 
     function handleMobileSort(v) { if(v) sortTable(v, {classList:{add:()=>{},remove:()=>{},contains:()=>false}}); }
@@ -326,10 +295,8 @@
         if(currentSort.key===k){currentSort.asc=!currentSort.asc;}else{currentSort.key=k;currentSort.asc=true;}
         document.querySelectorAll('th.sortable').forEach(e=>e.className='sortable');
         if(el.classList)el.classList.add(currentSort.asc?'sort-asc':'sort-desc');
-        
         courses.sort((a,b)=>{
-            let vA=(k==='status')?statusMap[a[k]].order:a[k];
-            let vB=(k==='status')?statusMap[b[k]].order:b[k];
+            let vA=(k==='status')?statusMap[a[k]].order:a[k], vB=(k==='status')?statusMap[b[k]].order:b[k];
             if (vA < vB) return currentSort.asc ? -1 : 1;
             if (vA > vB) return currentSort.asc ? 1 : -1;
             return 0;
